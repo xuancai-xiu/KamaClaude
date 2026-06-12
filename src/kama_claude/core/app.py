@@ -275,8 +275,12 @@ class CoreApp:
 
         loop = asyncio.get_running_loop()
         shutdown = asyncio.Event()
-        loop.add_signal_handler(signal.SIGINT, shutdown.set)
-        loop.add_signal_handler(signal.SIGTERM, shutdown.set)
+        try:
+            loop.add_signal_handler(signal.SIGINT, shutdown.set)
+            loop.add_signal_handler(signal.SIGTERM, shutdown.set)
+        except NotImplementedError:
+            signal.signal(signal.SIGINT, lambda signum, frame: shutdown.set())
+            signal.signal(signal.SIGTERM, lambda signum, frame: shutdown.set())
 
         await shutdown.wait()
 
